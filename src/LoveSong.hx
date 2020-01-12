@@ -29,12 +29,15 @@ class LoveSong {
 	public function new(?complexity:Complexity, ?rests:Bool, ?octave:Int)
 	{
 		this.main();
+		this._octaves = [3,4,5,6,7]; // TODO - REM
+		this._noteTypes = ['q','e','s','r']; // TODO - REM
+		this._complexity = Complexity.Complex; // TODO - REM
 	}
 
 	function main(?complexity:Complexity, ?rests:Bool, ?octave:Int) {
 		this._timestamp = new Date(2019,9,2,9,55,32).getTime();
 
-		if (complexity != null) this._complexity = complexity
+		if (complexity != null) this._complexity = complexity;
 		else this._complexity = Random.fromArray([Complexity.Complex, Complexity.Normal, Complexity.Simple]);
 
 		if (rests != null) this._rests = rests
@@ -44,6 +47,7 @@ class LoveSong {
 		else this._octave = Random.fromArray(this._octaves);
 
 		var bars = 4;
+		var barLength = 100.;
 		var randomNotes = [];
 		var randomNotesNames = [];
 		var limit = 8;
@@ -69,13 +73,42 @@ class LoveSong {
 			) currentSongStr += currentOctave;
 
 			// Get Note Type and Finish String
-			currentSongStr += getRandomNoteType(complexity);
+			//currentSongStr += getRandomNoteType(complexity);
+//js
+var noteTypeBarPercent = 0.;
+var curNoteLen = getRandomNoteType(complexity);
+noteTypeBarPercent = getNoteLengthAsBarPercent(curNoteLen);
+var newBarLength = barLength - noteTypeBarPercent;
+if (newBarLength < 0.) {
+	while (newBarLength < 0.) {
+	noteTypeBarPercent = 0;
+	curNoteLen = getRandomNoteType(complexity);
+	noteTypeBarPercent = getNoteLengthAsBarPercent(curNoteLen);
+	newBarLength = barLength - noteTypeBarPercent;
+trace(newBarLength,'TST');
+	}
+}
+barLength = newBarLength;
+currentSongStr += curNoteLen;
+//js
 			currentSongStr += noteName;
 			this._songString += currentSongStr;
 		}
 
 		_notes = randomNotesNames;
 		return randomNotesNames;
+	}
+
+	function getNoteLengthAsBarPercent(noteLength) {
+		var noteTypeBarPercent = 0.;
+		if (noteLength == 'w') noteTypeBarPercent = 100.00;
+		if (noteLength == 't') noteTypeBarPercent = 33.33;
+		if (noteLength == 'h') noteTypeBarPercent = 50.;
+		if (noteLength == 'q') noteTypeBarPercent = 25.;
+		if (noteLength == 'e') noteTypeBarPercent = 12.5;
+		if (noteLength == 's') noteTypeBarPercent = 6.25;
+		return noteTypeBarPercent;
+
 	}
 
 	function getRandomNoteAsNumber(scaleType:ScaleType) {
@@ -104,7 +137,7 @@ class LoveSong {
 
 	function getRandomNoteType(complexity:Complexity) {
 		var currentNoteType = Random.fromArray(this._noteTypes);
-		var availableTypes = ['q','w','h'];
+		var availableTypes = ['q'];//,'w','h'];
 		if (this._rests == true) availableTypes.push('r');
 
 		if (complexity == Complexity.Simple) {
