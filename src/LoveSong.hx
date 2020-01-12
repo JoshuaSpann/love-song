@@ -18,7 +18,8 @@ enum Complexity {
 
 class LoveSong {
 	private var _timestamp:Float;
-	private var _octaves = [0,1,2,3,4,5,6,7,8,9,10];
+	//private var _octaves = [0,1,2,3,4,5,6,7,8,9,10];
+	private var _octaves = [3,4,5,6,7];
 	private var _notes:Array<String>;
 	private var _octave:Int;
 	private var _noteTypes = ['w','h','q','e','s','t','.','r'];
@@ -47,14 +48,15 @@ class LoveSong {
 		else this._octave = Random.fromArray(this._octaves);
 
 		var bars = 4;
-		var barLength = 100.;
+		var barLengthTicks = 32;
 		var randomNotes = [];
 		var randomNotesNames = [];
-		var limit = 8;
+		var limit = bars*barLengthTicks;
 		var scaleType = ScaleType.Ionian;
 		var key = 'C';
 		var remainingNotesInBar = 4;
 		var lastOctave = this._octave;
+		var lastNoteLen = '';
 		this._songString += lastOctave;
 
 		for (limit_i in 0...limit) {
@@ -73,25 +75,30 @@ class LoveSong {
 			) currentSongStr += currentOctave;
 
 			// Get Note Type and Finish String
-			//currentSongStr += getRandomNoteType(complexity);
-//js
-var noteTypeBarPercent = 0.;
-var curNoteLen = getRandomNoteType(complexity);
-noteTypeBarPercent = getNoteLengthAsBarPercent(curNoteLen);
-var newBarLength = barLength - noteTypeBarPercent;
-if (newBarLength < 0.) {
-	while (newBarLength < 0.) {
-	noteTypeBarPercent = 0;
-	curNoteLen = getRandomNoteType(complexity);
-	noteTypeBarPercent = getNoteLengthAsBarPercent(curNoteLen);
-	newBarLength = barLength - noteTypeBarPercent;
-trace(newBarLength,'TST');
-	}
-}
-barLength = newBarLength;
-currentSongStr += curNoteLen;
-//js
-			currentSongStr += noteName;
+
+
+			var noteTicks = 0;
+			var curNoteLen = getRandomNoteType(complexity);
+			noteTicks = getNoteLengthTicks(curNoteLen);
+			var newBarLengthTicks = barLengthTicks - noteTicks;
+			if (newBarLengthTicks < 0) {
+				while (newBarLengthTicks < 0) {
+					noteTicks = 0;
+					curNoteLen = getRandomNoteType(complexity);
+					noteTicks = getNoteLengthTicks(curNoteLen);
+					newBarLengthTicks = barLengthTicks - noteTicks;
+trace(newBarLengthTicks,'TST');
+				}
+			}
+			barLengthTicks = newBarLengthTicks;
+
+			if (lastNoteLen != curNoteLen) {
+				currentSongStr += curNoteLen;
+				lastNoteLen = curNoteLen;
+			}
+
+
+			if (curNoteLen != 'r') currentSongStr += noteName;
 			this._songString += currentSongStr;
 		}
 
@@ -99,16 +106,15 @@ currentSongStr += curNoteLen;
 		return randomNotesNames;
 	}
 
-	function getNoteLengthAsBarPercent(noteLength) {
-		var noteTypeBarPercent = 0.;
-		if (noteLength == 'w') noteTypeBarPercent = 100.00;
-		if (noteLength == 't') noteTypeBarPercent = 33.33;
-		if (noteLength == 'h') noteTypeBarPercent = 50.;
-		if (noteLength == 'q') noteTypeBarPercent = 25.;
-		if (noteLength == 'e') noteTypeBarPercent = 12.5;
-		if (noteLength == 's') noteTypeBarPercent = 6.25;
-		return noteTypeBarPercent;
-
+	function getNoteLengthTicks(noteLength) {
+		var noteTicks = 0;
+		if (noteLength == 'w') noteTicks = 32;
+		if (noteLength == 't') noteTicks = 16;
+		if (noteLength == 'h') noteTicks = 8;
+		if (noteLength == 'q') noteTicks = 4;
+		if (noteLength == 'e') noteTicks = 2;
+		if (noteLength == 's') noteTicks = 1;
+		return noteTicks;
 	}
 
 	function getRandomNoteAsNumber(scaleType:ScaleType) {
@@ -137,7 +143,7 @@ currentSongStr += curNoteLen;
 
 	function getRandomNoteType(complexity:Complexity) {
 		var currentNoteType = Random.fromArray(this._noteTypes);
-		var availableTypes = ['q'];//,'w','h'];
+		var availableTypes = ['q','w','h'];
 		if (this._rests == true) availableTypes.push('r');
 
 		if (complexity == Complexity.Simple) {
@@ -152,6 +158,9 @@ currentSongStr += curNoteLen;
 			availableTypes.push('e');
 			availableTypes.push('s');
 		}
+
+// TODO - Go back to complexity for types
+availableTypes = ['q','e','s','t'];
 
 		while (availableTypes.indexOf(currentNoteType) < 0)
 			currentNoteType = Random.fromArray(this._noteTypes);
